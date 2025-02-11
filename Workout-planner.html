@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Workout Planner</title>
+    <style>
+        /* Fight Gym CSS */
+        body {
+            background: url('thisone4.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            position: relative;
+        }
+        /* Dark overlay for a grittier look */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* 50% opacity */
+            z-index: -1;
+        }
+        h1 {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .day-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 20px;
+        }
+        .day-card {
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            transition: background 0.3s;
+        }
+        .day-card:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .day-card h3 {
+            margin: 0;
+            padding: 10px 0;
+        }
+        .day-card div {
+            margin: 5px 0;
+        }
+        input {
+            width: 100%;
+            margin: 3px 0;
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+        }
+        button {
+            margin-top: 8px;
+            padding: 5px 12px;
+            border: none;
+            border-radius: 3px;
+            background-color: #e74c3c; /* punchy red */
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <h1>30-Day Workout Planner</h1>
+    <div class="day-container" id="calendar"></div>
+
+    <script>
+        // Data structure to hold workouts
+        const workoutPlan = Array.from({ length: 30 }, (_, index) => ({
+            day: index + 1,
+            exercises: Array(5).fill('') // 5 exercises per day
+        }));
+
+        // Render the calendar
+        function renderCalendar() {
+            const container = document.getElementById('calendar');
+            container.innerHTML = '';
+            
+            workoutPlan.forEach(day => {
+                const card = document.createElement('div');
+                card.className = 'day-card';
+                card.innerHTML = `
+                    <h3>DAY ${day.day}</h3>
+                    ${day.exercises.map(ex => `<div>${ex || '_____'}</div>`).join('')}
+                `;
+                // Only trigger edit mode if clicking outside of inputs and buttons
+                card.addEventListener('click', function(e) {
+                    const tag = e.target.tagName.toLowerCase();
+                    if (tag !== 'input' && tag !== 'button') {
+                        editDay(day, this);
+                    }
+                });
+                container.appendChild(card);
+            });
+        }
+
+        // Edit a day: 'card' is passed in directly
+        function editDay(day, card) {
+            card.innerHTML = `
+                <h3>DAY ${day.day}</h3>
+                ${day.exercises.map((ex, index) => `
+                    <input 
+                        value="${ex}" 
+                        placeholder="Exercise ${index + 1}"
+                        id="day-${day.day}-ex-${index}"
+                        onclick="event.stopPropagation()"
+                    >
+                `).join('')}
+                <button onclick="saveDay(${day.day - 1}, this.parentElement); event.stopPropagation();">Save</button>
+            `;
+            // Set focus to the first input field so you can start typing immediately
+            const firstInput = card.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }
+
+        // Save a day's exercises
+        function saveDay(dayIndex, cardElement) {
+            const inputs = cardElement.querySelectorAll('input');
+            workoutPlan[dayIndex].exercises = Array.from(inputs).map(input => input.value);
+            renderCalendar(); // Refresh the display
+        }
+
+        // Initial render
+        renderCalendar();
+    </script>
+</body>
+</html>
